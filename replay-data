@@ -1,0 +1,60 @@
+#!/usr/bin/env python
+"""
+Main function of replay demo tool.
+This tool parses all input by 'argparse'.
+If you want to know how to use this tool, please read the README.md file.
+"""
+import argparse
+from src.util import *
+
+
+
+def add_record_subparsor(subparsers):
+    record_parser = subparsers.add_parser('record', help='record tool')
+    record_parser.add_argument('-f', '--file', required=False,
+                               help='configuration file for recording data')
+    record_parser.set_defaults(action='record')
+
+
+def add_publish_subparsor(subparsers):
+    publish_parser = subparsers.add_parser('publish', help='publish tool')
+    publish_parser.add_argument('-d', '--dir', required=False,
+                                help='recorded data directory')
+    publish_parser.add_argument('-t', '--token', required=False,
+                                help='api_token for publishing data')
+    publish_parser.add_argument('-i', '--ingest', required=False,
+                                help='ingest url for publishing data')
+    publish_parser.add_argument('-f', '--file', help='log file path')
+    publish_parser.add_argument('-v', '--verbose', action='store_true',
+                                help='verbose log file')
+    publish_parser.set_defaults(action='publish')
+
+
+if __name__ == '__main__':
+    PARSER = argparse.ArgumentParser(
+        description='Tool for replay the time series data')
+    subparsers = PARSER.add_subparsers()
+    add_record_subparsor(subparsers)
+    add_publish_subparsor(subparsers)
+
+    ARGS = PARSER.parse_args()
+
+    if ARGS.action == 'record':
+        try:
+            from src.record_data import record_data
+            record_data(ARGS.file)
+        except Error as e:
+            print("Record data Error!")
+            print e.message
+    elif ARGS.action == 'publish':
+        try:
+            from src.publish_data import publish_data
+            publish_data(str(ARGS.dir),
+                         str(ARGS.token),
+                         str(ARGS.ingest),
+                         ARGS.file,
+                         ARGS.verbose
+                         )
+        except Error as e:
+            print("Publish data Error!")
+            print e.message
